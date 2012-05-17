@@ -1,2 +1,3 @@
-class Product < ActiveRecord::Base
+class Product < Model
+	belongs_to :account
 end

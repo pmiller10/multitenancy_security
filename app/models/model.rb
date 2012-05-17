@@ -1,6 +1,5 @@
   class Model < ActiveRecord::Base
     self.abstract_class = true
-    belongs_to :account
 
 	def self.build_default_scope
       if method(:default_scope).owner != ActiveRecord::Base.singleton_class
