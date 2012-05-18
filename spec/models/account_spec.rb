@@ -7,6 +7,13 @@ describe Account do
 		account.should be_valid
 	end
 
+	it " should validate that names are unique" do
+		a = Account.create(name: 'a')
+		invalid = Account.new(name: 'a')
+		invalid.should be_invalid
+	end
+		
+
 	it " should store the current account in the current thread" do
 		@account = Account.create(name: 'alpha')
 		Account.current = @account

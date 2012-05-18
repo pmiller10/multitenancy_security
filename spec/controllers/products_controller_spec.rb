@@ -34,38 +34,72 @@ describe ProductsController do
     {}
   end
 
+	def current_account
+		Account.find_or_create_by_name('alpha')
+	end
+
+	def other_account
+		Account.find_or_create_by_name('beta')
+	end
+
   describe "GET index" do
     it "assigns all products as @products" do
+			Account.current = current_account
       product = Product.create! valid_attributes
-      get :index, {}, valid_session
+      get :index, {:account_name => current_account.name}, valid_session
+      assigns(:products).should eq([product])
+    end
+
+		it "doesn't show products from other accounts" do
+			# Create data for the other account
+			Account.current = other_account
+      Product.create! valid_attributes
+
+			Account.current = current_account
+      product = Product.create! valid_attributes
+      get :index, {:account_name => current_account.name}, valid_session
       assigns(:products).should eq([product])
     end
   end
 
   describe "GET show" do
-    it "assigns the requested product as @product" do
-      product = Product.create! valid_attributes
-      get :show, {:id => product.to_param}, valid_session
-      assigns(:product).should eq(product)
+    it "shouldn't show data to a different tenant's account" do
+			# Create data for the other account
+			Account.current = other_account
+      other_product = Product.create! valid_attributes
+
+			# Now if a user logs on to another account and tries to access that product.
+      get :show, {:id => other_product.to_param, :account_name => current_account.name}, valid_session
+      assigns(:product).should eq(nil)
     end
   end
 
   describe "GET new" do
     it "assigns a new product as @product" do
-      get :new, {}, valid_session
+      get :new, {:account_name => current_account.name}, valid_session
       assigns(:product).should be_a_new(Product)
     end
   end
 
   describe "GET edit" do
     it "assigns the requested product as @product" do
+			Account.current = current_account
       product = Product.create! valid_attributes
-      get :edit, {:id => product.to_param}, valid_session
+      get :edit, {:id => product.to_param, :account_name => current_account.name}, valid_session
       assigns(:product).should eq(product)
     end
   end
 
   describe "POST create" do
+		describe "POST create" do
+      it "shouldn't creates a new Product for another account" do
+				Account.current = other_account
+        expect {
+          post :create, {:account_name => 'beta', :product => {}}, valid_session
+        }.to change(Product, :count).by(1)
+      end
+		end
+
     describe "with valid params" do
       it "creates a new Product" do
         expect {

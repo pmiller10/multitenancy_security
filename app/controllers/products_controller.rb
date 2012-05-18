@@ -1,4 +1,4 @@
-class ProductsController < ApplicationController
+class ProductsController < AccountScopeController
   # GET /products
   # GET /products.json
   def index
@@ -13,7 +13,7 @@ class ProductsController < ApplicationController
   # GET /products/1
   # GET /products/1.json
   def show
-    @product = Product.find(params[:id])
+    @product = Product.find_by_id(params[:id])
 
     respond_to do |format|
       format.html # show.html.erb
