@@ -2,11 +2,6 @@ require 'spec_helper'
 
 describe Product do
 
-	it " should make a valid product" do
-		p = Product.new(name: "test", price: 22)
-		p.should be_valid
-	end
-
 	it " should belong to the current account" do
 		account = Account.create(name: 'alpha')
 		Account.current = account
@@ -32,8 +27,8 @@ describe Product do
 
 	it " should only update products associated with the current account" do
 		epsilon, sigma = Account.create(name: 'epsilon'), Account.create(name: 'sigma')
-		Product.create(name: "e", price: 22, account_id: epsilon.id)
-		Product.create(name: "s", price: 22, account_id: sigma.id)
+		epsilon.with { Product.create(name: "e", price: 22, account_id: epsilon.id) }
+		sigma.with { Product.create(name: "s", price: 22, account_id: sigma.id) }
 		Account.current = epsilon
 		Product.update_all('price = 33')
 		e = Product.first
@@ -49,6 +44,19 @@ describe Product do
 
 		Account.current = epsilon
 		Product.count.should > 0
+	end
+
+	it " shouldn't create products for another account" do
+		account = Account.create(name: 'kappa')
+		other = Account.create(name: 'iota')
+		correct_count = account.with {correct_count = Product.count}
+		# Create a product for another account.
+		other.with do
+			Product.create(:price => 45, :account_id => account.id)
+		end
+		account.with do 
+			Product.count.should eq(correct_count)
+		end
 	end
 
 end

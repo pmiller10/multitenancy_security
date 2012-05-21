@@ -13,4 +13,8 @@ class Account < ActiveRecord::Base
 		end
 	end
 
+	def with
+		Account.current = self
+		yield
+	end
 end

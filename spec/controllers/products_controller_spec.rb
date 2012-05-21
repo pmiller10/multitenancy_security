@@ -92,11 +92,22 @@ describe ProductsController do
 
   describe "POST create" do
 		describe "POST create" do
-      it "shouldn't creates a new Product for another account" do
+      it "shouldn't create a new Product for another account" do
+				correct_count = current_account.with do
+					correct_count = Product.count
+				end
+
 				Account.current = other_account
-        expect {
-          post :create, {:account_name => 'beta', :product => {}}, valid_session
-        }.to change(Product, :count).by(1)
+				count = Product.count
+				post :create, :account_name => current_account.name, :product => {:price => 25}
+				Product.count.should eq(count + 1)
+
+				current_account.with do
+					Product.count.should eq(correct_count)
+				end
+        #expect {
+          #jpost :create, {:account_name => 'beta', :product => {}}, valid_session
+        #}.to change(Product, :count).by(1)
       end
 		end
 
